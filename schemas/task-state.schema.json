@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Task Relay State",
+  "description": "Machine-readable state for handing off or resuming an unfinished task.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "goal",
+    "acceptance_criteria",
+    "constraints",
+    "decisions",
+    "completed",
+    "unverified",
+    "remaining",
+    "blockers",
+    "artifacts",
+    "authorization_notes",
+    "next_action",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "task_id": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "goal": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourcedValue"
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "required": ["decision", "source"],
+            "properties": {
+              "decision": {"type": "string", "minLength": 1},
+              "rationale": {"type": ["string", "null"]},
+              "source": {"type": ["string", "null"]},
+              "confirmed_at": {"type": ["string", "null"], "format": "date-time"}
+            },
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+    "completed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item", "evidence", "artifact_version", "verification_scope"],
+        "properties": {
+          "item": {"type": "string", "minLength": 1},
+          "evidence": {"type": ["string", "null"]},
+          "artifact_version": {"type": ["string", "null"]},
+          "verification_scope": {"type": ["string", "null"]},
+          "checked_at": {"type": ["string", "null"], "format": "date-time"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "unverified": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["item", "status"],
+        "properties": {
+          "item": {"type": "string", "minLength": 1},
+          "status": {
+            "enum": [
+              "implemented_but_unverified",
+              "completion_claimed_only",
+              "partial_check",
+              "stale_check",
+              "unknown"
+            ]
+          },
+          "source": {"type": ["string", "null"]},
+          "evidence": {"type": ["string", "null"]},
+          "artifact_version": {"type": ["string", "null"]},
+          "missing_check": {"type": ["string", "null"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "remaining": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/workItem"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "required": ["blocker"],
+            "properties": {
+              "blocker": {"type": "string", "minLength": 1},
+              "impact": {"type": ["string", "null"]},
+              "clear_when": {"type": ["string", "null"]},
+              "source": {"type": ["string", "null"]}
+            },
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "location", "version", "status", "evidence"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "location": {"type": ["string", "null"]},
+          "version": {"type": ["string", "null"]},
+          "status": {
+            "enum": [
+              "verified_complete",
+              "implemented_but_unverified",
+              "completion_claimed_only",
+              "incomplete",
+              "unknown"
+            ]
+          },
+          "evidence": {"type": ["string", "null"]},
+          "verification_scope": {"type": ["string", "null"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "authorization_notes": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "object",
+            "required": ["action", "source", "scope"],
+            "properties": {
+              "action": {"type": "string", "minLength": 1},
+              "source": {"type": ["string", "null"]},
+              "scope": {"type": ["string", "null"]},
+              "limits": {"type": ["string", "null"]}
+            },
+            "additionalProperties": true
+          }
+        ]
+      }
+    },
+    "next_action": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["action", "complete_when", "prerequisites"],
+          "properties": {
+            "action": {"type": "string", "minLength": 1},
+            "complete_when": {"type": "string", "minLength": 1},
+            "prerequisites": {
+              "type": "array",
+              "items": {"type": "string", "minLength": 1}
+            }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "sourcedValue": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "required": ["value", "source"],
+          "properties": {
+            "value": {"type": "string", "minLength": 1},
+            "source": {"type": ["string", "null"]}
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "workItem": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "required": ["item"],
+          "properties": {
+            "item": {"type": "string", "minLength": 1},
+            "complete_when": {"type": ["string", "null"]},
+            "source": {"type": ["string", "null"]}
+          },
+          "additionalProperties": true
+        }
+      ]
+    }
+  },
+  "additionalProperties": true
+}
